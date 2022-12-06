@@ -328,7 +328,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 			TxData[1] = 0x98;
 			TxData[2] = 0x60;
 			TxData[3] = 0x00;
-			TxData[4] = 0x22;
+			TxData[4] = 0x21;
 			TxData[5] = 0x00;
 			TxData[6] = 0x00;
 			TxData[7] = 0x00;
@@ -401,8 +401,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 				HAL_UART_Transmit(&huart3, "C025", 4, 100);
 			}
 			break;
-
-
 		case 30://POSITION MODE
 			TxHeader.StdId = 0x60A;
 			TxHeader.DLC = 8;
@@ -423,7 +421,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 				HAL_UART_Transmit(&huart3, "C030", 4, 100);
 			}
 			break;
-		case 40:// POSITION 0//POSITION 30
+
+		case 40:// POSITION 120
 			TxHeader.StdId = 0x60A;
 			TxHeader.DLC = 8;
 
@@ -431,17 +430,101 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 			TxData[1] = 0x7A;
 			TxData[2] = 0x60;
 			TxData[3] = 0x00;
-			TxData[4] = 0x00;//0x30;
-			TxData[5] = 0x00;//0x75;
-			TxData[6] = 0x00;//0X00;
-			TxData[7] = 0x00;//0x00;
+			TxData[4] = 0xC0;
+			TxData[5] = 0xD4;
+			TxData[6] = 0x01;
+			TxData[7] = 0x00;
 
 			if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
 				Error_Handler();
 			}
 			else{
 				iMachineStatus = 50;
-				HAL_UART_Transmit(&huart3, "C040", 4, 100);
+				HAL_UART_Transmit(&huart3, "P120", 4, 100);
+			}
+			break;
+		case 41:// POSITION 90
+			TxHeader.StdId = 0x60A;
+			TxHeader.DLC = 8;
+
+			TxData[0] = 0x22;
+			TxData[1] = 0x7A;
+			TxData[2] = 0x60;
+			TxData[3] = 0x00;
+			TxData[4] = 0x90;
+			TxData[5] = 0x5F;
+			TxData[6] = 0x01;
+			TxData[7] = 0x00;
+
+			if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+				Error_Handler();
+			}
+			else{
+				iMachineStatus = 50;
+				HAL_UART_Transmit(&huart3, "P090", 4, 100);
+			}
+			break;
+		case 42:// POSITION 0
+			TxHeader.StdId = 0x60A;
+			TxHeader.DLC = 8;
+
+			TxData[0] = 0x22;
+			TxData[1] = 0x7A;
+			TxData[2] = 0x60;
+			TxData[3] = 0x00;
+			TxData[4] = 0x00;
+			TxData[5] = 0x0F;
+			TxData[6] = 0x00;
+			TxData[7] = 0x00;
+
+			if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+				Error_Handler();
+			}
+			else{
+				iMachineStatus = 50;
+				HAL_UART_Transmit(&huart3, "P000", 4, 100);
+			}
+			break;
+		case 43:// POSITION 180
+			TxHeader.StdId = 0x60A;
+			TxHeader.DLC = 8;
+
+			TxData[0] = 0x22;
+			TxData[1] = 0x7A;
+			TxData[2] = 0x60;
+			TxData[3] = 0x00;
+			TxData[4] = 0x20;
+			TxData[5] = 0xBF;
+			TxData[6] = 0x02;
+			TxData[7] = 0x00;
+
+			if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+				Error_Handler();
+			}
+			else{
+				iMachineStatus = 50;
+				HAL_UART_Transmit(&huart3, "P180", 4, 100);
+			}
+			break;
+		case 44:// POSITION 45
+			TxHeader.StdId = 0x60A;
+			TxHeader.DLC = 8;
+
+			TxData[0] = 0x22;
+			TxData[1] = 0x7A;
+			TxData[2] = 0x60;
+			TxData[3] = 0x00;
+			TxData[4] = 0xC8;
+			TxData[5] = 0xAF;
+			TxData[6] = 0x00;
+			TxData[7] = 0x00;
+
+			if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+				Error_Handler();
+			}
+			else{
+				iMachineStatus = 50;
+				HAL_UART_Transmit(&huart3, "P045", 4, 100);
 			}
 			break;
 		case 50://START SUPPLY
@@ -464,6 +547,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 				HAL_UART_Transmit(&huart3, "C050", 4, 100);
 			}
 			break;
+
 		case 60://STOP SUPPLY
 			TxHeader.StdId = 0x60A;
 			TxHeader.DLC = 8;
