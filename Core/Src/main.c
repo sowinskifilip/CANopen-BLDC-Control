@@ -317,10 +317,12 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 				Error_Handler();
 			}
 			else{
-				iMachineStatus = 22;
+				iMachineStatus = 30;
 				HAL_UART_Transmit(&huart3, "C021", 4, 100);
 			}
 			break;
+
+			/* HOMING - NOT USED
 		case 22://HOMING METHOD 34 - INDEX IN POSITIVE DIRECITON
 			TxHeader.StdId = 0x60A;
 			TxHeader.DLC = 8;
@@ -401,6 +403,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 				HAL_UART_Transmit(&huart3, "C025", 4, 100);
 			}
 			break;
+			*/
+
 		case 30://POSITION MODE
 			TxHeader.StdId = 0x60A;
 			TxHeader.DLC = 8;
@@ -473,7 +477,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 			TxData[2] = 0x60;
 			TxData[3] = 0x00;
 			TxData[4] = 0x00;
-			TxData[5] = 0x0F;
+			TxData[5] = 0x00;
 			TxData[6] = 0x00;
 			TxData[7] = 0x00;
 
@@ -525,6 +529,23 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 			else{
 				iMachineStatus = 50;
 				HAL_UART_Transmit(&huart3, "P045", 4, 100);
+			}
+			break;
+		case 45:// POSITION XXX
+			TxHeader.StdId = 0x60A;
+			TxHeader.DLC = 8;
+
+			TxData[0] = 0x22;
+			TxData[1] = 0x7A;
+			TxData[2] = 0x60;
+			TxData[3] = 0x00;
+
+			if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+				Error_Handler();
+			}
+			else{
+				iMachineStatus = 50;
+				HAL_UART_Transmit(&huart3, "PXXX", 4, 100);
 			}
 			break;
 		case 50://START SUPPLY
@@ -586,6 +607,26 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 			else{
 				iMachineStatus = 80;
 				HAL_UART_Transmit(&huart3, "C070", 4, 100);
+			}
+			break;
+		case 200://FAULT RESET
+			TxHeader.StdId = 0x60A;
+			TxHeader.DLC = 8;
+			TxData[0] = 0x22;
+			TxData[1] = 0x40;
+			TxData[2] = 0x60;
+			TxData[3] = 0x00;
+			TxData[4] = 0x80;
+			TxData[5] = 0x00;
+			TxData[6] = 0x00;
+			TxData[7] = 0x00;
+
+			if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+				Error_Handler();
+			}
+			else{
+				iMachineStatus = 10;
+				HAL_UART_Transmit(&huart3, "C200", 4, 100);
 			}
 			break;
 		}
