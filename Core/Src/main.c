@@ -20,6 +20,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "can.h"
+#include "tim.h"
 #include "usart.h"
 #include "usb_otg.h"
 #include "gpio.h"
@@ -49,9 +50,13 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint8_t UserMessage[4];
-const uint8_t ErrorMessage[] = "UART ERROR\r\n";
 
+//UART VARIABLES
+const uint8_t sInitCommand[] = "INIT";
+uint8_t sUserMessage[4];
+const uint8_t sErrorMessage[] = "UART ERROR\r\n";
+
+//CAN VARIABLES
 CAN_TxHeaderTypeDef TxHeader;
 uint8_t TxData[8];
 uint32_t TxMailbox;
@@ -59,9 +64,11 @@ uint32_t TxMailbox;
 CAN_RxHeaderTypeDef RxHeader;
 uint8_t RxData[8];
 
-uint8_t iMachineStatus = 100;
-
 CAN_FilterTypeDef CANFilter;
+
+//STATE MACHINE VARIABLES
+uint8_t iMachineStatus = 100;
+uint8_t iHomingStatus = 100;
 
 /* USER CODE END PV */
 
@@ -69,10 +76,200 @@ CAN_FilterTypeDef CANFilter;
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
 
+//INIT FUNCTION
+void Init(){
+	switch(iMachineStatus){
+	case 0: //RESET PDO
+		TxHeader.StdId = 0x000;
+		TxHeader.DLC = 2;
+		TxData[0] = 0x82;
+		TxData[1] = 0x0A;
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_SET);
+			Error_Handler();
+		}
+		else{
+			iMachineStatus = 5;
+			HAL_UART_Transmit(&huart3, "C000", 4, 100);
+		}
+		break;
+	case 5: //SET PDO
+		TxHeader.StdId = 0x000;
+		TxHeader.DLC = 2;
+		TxData[0] = 0x01;
+		TxData[1] = 0x0A;
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			Error_Handler();
+		}
+		else{
+			iMachineStatus = 10;
+			HAL_UART_Transmit(&huart3, "C005", 4, 100);
+		}
+		break;
+	case 10: //SHUTDOWN
+		TxHeader.StdId = 0x60A;
+		TxHeader.DLC = 8;
+		TxData[0] = 0x22;
+		TxData[1] = 0x40;
+		TxData[2] = 0x60;
+		TxData[3] = 0x00;
+		TxData[4] = 0x06;
+		TxData[5] = 0x00;
+		TxData[6] = 0x00;
+		TxData[7] = 0x00;
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			Error_Handler();
+		}
+		else{
+			iMachineStatus = 20;
+			HAL_UART_Transmit(&huart3, "C010", 4, 100);
+		}
+		break;
+	case 20://SWITCH ON
+		TxHeader.StdId = 0x60A;
+		TxHeader.DLC = 8;
+		TxData[0] = 0x22;
+		TxData[1] = 0x40;
+		TxData[2] = 0x60;
+		TxData[3] = 0x00;
+		TxData[4] = 0x07;
+		TxData[5] = 0x00;
+		TxData[6] = 0x00;
+		TxData[7] = 0x00;
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			Error_Handler();
+		}
+		else{
+			iMachineStatus = 25;
+			HAL_UART_Transmit(&huart3, "C020", 4, 100);
+		}
+		break;
+
+	case 25://ENABLE OPERATION
+		TxHeader.StdId = 0x60A;
+		TxHeader.DLC = 8;
+		TxData[0] = 0x22;
+		TxData[1] = 0x40;
+		TxData[2] = 0x60;
+		TxData[3] = 0x00;
+		TxData[4] = 0x0F;
+		TxData[5] = 0x00;
+		TxData[6] = 0x00;
+		TxData[7] = 0x00;
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			Error_Handler();
+		}
+		else{
+			iMachineStatus = 30;
+			HAL_UART_Transmit(&huart3, "C025", 4, 100);
+		}
+		break;
+
+	case 30://POSITION MODE
+		TxHeader.StdId = 0x60A;
+		TxHeader.DLC = 8;
+		TxData[0] = 0x22;
+		TxData[1] = 0x60;
+		TxData[2] = 0x60;
+		TxData[3] = 0x00;
+		TxData[4] = 0x01;
+		TxData[5] = 0x00;
+		TxData[6] = 0x00;
+		TxData[7] = 0x00;
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			Error_Handler();
+		}
+		else{
+			iMachineStatus = 40;
+			HAL_UART_Transmit(&huart3, "C030", 4, 100);
+		}
+		break;
+
+	case 40:// POSITION 0
+		TxHeader.StdId = 0x60A;
+		TxHeader.DLC = 8;
+
+		TxData[0] = 0x22;
+		TxData[1] = 0x7A;
+		TxData[2] = 0x60;
+		TxData[3] = 0x00;
+		TxData[4] = 0x00;
+		TxData[5] = 0x00;
+		TxData[6] = 0x00;
+		TxData[7] = 0x00;
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			Error_Handler();
+		}
+		else{
+			iMachineStatus = 50;
+			HAL_UART_Transmit(&huart3, "P000", 4, 100);
+		}
+		break;
+
+	case 50://START SUPPLY
+		TxHeader.StdId = 0x60A;
+		TxHeader.DLC = 8;
+		TxData[0] = 0x22;
+		TxData[1] = 0x40;
+		TxData[2] = 0x60;
+		TxData[3] = 0x00;
+		TxData[4] = 0x1F;
+		TxData[5] = 0x00;
+		TxData[6] = 0x00;
+		TxData[7] = 0x00;
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			Error_Handler();
+		}
+		else{
+			iMachineStatus = 60;
+			HAL_UART_Transmit(&huart3, "C050", 4, 100);
+		}
+		break;
+
+	case 60://STOP SUPPLY
+		TxHeader.StdId = 0x60A;
+		TxHeader.DLC = 8;
+		TxData[0] = 0x22;
+		TxData[1] = 0x40;
+		TxData[2] = 0x60;
+		TxData[3] = 0x00;
+		TxData[4] = 0x0F;
+		TxData[5] = 0x00;
+		TxData[6] = 0x00;
+		TxData[7] = 0x00;
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			Error_Handler();
+		}
+		else{
+			iMachineStatus = 70;
+			HAL_UART_Transmit(&huart3, "C060", 4, 100);
+		}
+		break;
+	}
+}
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
+	if(htim -> Instance == TIM6){
+		Init();
+	}
+}
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	if(GPIO_Pin == USER_Btn_Pin){
 		TxHeader.StdId = 0x60A;
@@ -125,11 +322,16 @@ int main(void)
 	MX_USART3_UART_Init();
 	MX_USB_OTG_FS_PCD_Init();
 	MX_CAN1_Init();
+	MX_TIM6_Init();
 	/* USER CODE BEGIN 2 */
-	HAL_UART_Receive_IT(&huart3, UserMessage, 4);
 
+	// UART START
+	HAL_UART_Receive_IT(&huart3, sUserMessage, 4);
+
+	// CAN START
 	HAL_CAN_Start(&hcan1);
 
+	// CAN CONFIG
 	// TxHeader param config
 	TxHeader.StdId = 0x000;
 	TxHeader.ExtId = 0;
@@ -137,11 +339,6 @@ int main(void)
 	TxHeader.RTR = CAN_RTR_DATA;
 	TxHeader.DLC = 2;
 	TxHeader.TransmitGlobalTime = DISABLE;
-
-	TxData[0] = 0x82;
-	TxData[1] = 0x0A;
-
-
 
 	// CANFilter param config
 	CANFilter.FilterActivation = CAN_FILTER_ENABLE;
@@ -243,6 +440,13 @@ void SystemClock_Config(void)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 	if(huart->Instance == USART3){
 
+		if(strncmp(sUserMessage, sInitCommand,4) == 0){
+			iMachineStatus = 0;
+			iHomingStatus = 0;
+			HAL_TIM_Base_Start_IT(&htim6);
+		}
+
+		/*
 		switch(iMachineStatus){
 		case 100: //PDO
 			TxHeader.StdId = 0x000;
@@ -321,89 +525,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 				HAL_UART_Transmit(&huart3, "C021", 4, 100);
 			}
 			break;
-
-			/* HOMING - NOT USED
-		case 22://HOMING METHOD 34 - INDEX IN POSITIVE DIRECITON
-			TxHeader.StdId = 0x60A;
-			TxHeader.DLC = 8;
-			TxData[0] = 0x22;
-			TxData[1] = 0x98;
-			TxData[2] = 0x60;
-			TxData[3] = 0x00;
-			TxData[4] = 0x21;
-			TxData[5] = 0x00;
-			TxData[6] = 0x00;
-			TxData[7] = 0x00;
-
-			if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
-				Error_Handler();
-			}
-			else{
-				iMachineStatus = 23;
-				HAL_UART_Transmit(&huart3, "C022", 4, 100);
-			}
-			break;
-		case 23://HOMING MODE
-			TxHeader.StdId = 0x60A;
-			TxHeader.DLC = 8;
-			TxData[0] = 0x22;
-			TxData[1] = 0x60;
-			TxData[2] = 0x60;
-			TxData[3] = 0x00;
-			TxData[4] = 0x06;
-			TxData[5] = 0x00;
-			TxData[6] = 0x00;
-			TxData[7] = 0x00;
-
-			if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
-				Error_Handler();
-			}
-			else{
-				iMachineStatus = 24;
-				HAL_UART_Transmit(&huart3, "C023", 4, 100);
-			}
-			break;
-		case 24://START HOMING
-			TxHeader.StdId = 0x60A;
-			TxHeader.DLC = 8;
-			TxData[0] = 0x22;
-			TxData[1] = 0x40;
-			TxData[2] = 0x60;
-			TxData[3] = 0x00;
-			TxData[4] = 0x1F;
-			TxData[5] = 0x00;
-			TxData[6] = 0x00;
-			TxData[7] = 0x00;
-
-			if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
-				Error_Handler();
-			}
-			else{
-				iMachineStatus = 25;
-				HAL_UART_Transmit(&huart3, "C024", 4, 100);
-			}
-			break;
-		case 25://STOP HOMING
-			TxHeader.StdId = 0x60A;
-			TxHeader.DLC = 8;
-			TxData[0] = 0x22;
-			TxData[1] = 0x40;
-			TxData[2] = 0x60;
-			TxData[3] = 0x00;
-			TxData[4] = 0x0F;
-			TxData[5] = 0x00;
-			TxData[6] = 0x00;
-			TxData[7] = 0x00;
-
-			if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
-				Error_Handler();
-			}
-			else{
-				iMachineStatus = 30;
-				HAL_UART_Transmit(&huart3, "C025", 4, 100);
-			}
-			break;
-			*/
 
 		case 30://POSITION MODE
 			TxHeader.StdId = 0x60A;
@@ -630,12 +751,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 			}
 			break;
 		}
+		*/
 
 	}
 	else{
-		HAL_UART_Transmit(&huart3, ErrorMessage, strlen(ErrorMessage), 100);
+		HAL_UART_Transmit(&huart3, sErrorMessage, strlen(sErrorMessage), 100);
 	}
-	HAL_UART_Receive_IT(&huart3, UserMessage, 4);
+	HAL_UART_Receive_IT(&huart3, sUserMessage, 4);
 }
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan){
