@@ -50,6 +50,7 @@
 
 /* USER CODE BEGIN PV */
 // to jest testowy komentarz - ADAM
+// to jest testowy komentarz - MIKOLAJ
 uint8_t UserMessage[4];
 const uint8_t ErrorMessage[] = "UART ERROR\r\n";
 
