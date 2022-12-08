@@ -87,6 +87,7 @@ void fnLEDsErrorState(){
 //INIT FUNCTION
 void fnInit(){
 	switch(iMachineStatus){
+
 	case 0: //RESET PDO
 		TxHeader.StdId = 0x000;
 		TxHeader.DLC = 2;
@@ -102,6 +103,7 @@ void fnInit(){
 			HAL_UART_Transmit(&huart3, "C000", 4, 100);
 		}
 		break;
+
 	case 5: //SET PDO
 		TxHeader.StdId = 0x000;
 		TxHeader.DLC = 2;
@@ -117,6 +119,7 @@ void fnInit(){
 			HAL_UART_Transmit(&huart3, "C005", 4, 100);
 		}
 		break;
+
 	case 10: //SHUTDOWN
 		TxHeader.StdId = 0x60A;
 		TxHeader.DLC = 8;
@@ -138,6 +141,7 @@ void fnInit(){
 			HAL_UART_Transmit(&huart3, "C010", 4, 100);
 		}
 		break;
+
 	case 20://SWITCH ON
 		TxHeader.StdId = 0x60A;
 		TxHeader.DLC = 8;
@@ -266,10 +270,44 @@ void fnInit(){
 			Error_Handler();
 		}
 		else{
-			iMachineStatus = 1;
-			iHomingStatus = 1;
+			iMachineStatus = 70;
 			HAL_UART_Transmit(&huart3, "C060", 4, 100);
 		}
+		break;
+
+	case 70://SEND STATUS CHECK
+		TxHeader.StdId = 0x60A;
+		TxHeader.DLC = 8;
+		TxData[0] = 0x40;
+		TxData[1] = 0x41;
+		TxData[2] = 0x60;
+		TxData[3] = 0x00;
+		TxData[4] = 0x00;
+		TxData[5] = 0x00;
+		TxData[6] = 0x00;
+		TxData[7] = 0x00;
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			fnLEDsErrorState();
+			Error_Handler();
+		}
+		else{
+			iMachineStatus = 80;
+			HAL_UART_Transmit(&huart3, "C070", 4, 100);
+		}
+		break;
+
+	case 80://READ STATUS CHECK
+		if (RxData[4] == 39) {
+			iMachineStatus = 1;
+			iHomingStatus = 1;
+			HAL_UART_Transmit(&huart3, "C080", 4, 100);
+		}
+		else {
+			fnLEDsErrorState();
+			Error_Handler();
+		}
+
 		break;
 	}
 }
@@ -287,6 +325,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 		}
 		else {
 			HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);
+			HAL_TIM_Base_Stop_IT(&htim6);
 		}
 	}
 }
@@ -601,7 +640,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan){
 
 	HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &RxHeader, RxData);
-	HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
+	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 }
 
 
