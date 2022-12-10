@@ -72,9 +72,12 @@ uint8_t iHomingStatus = 100;
 
 //ENCODER VARIABLES
 uint8_t iEncCount=0;
-uint8_t iEncCountsNumber = 40;
+const uint8_t iEncCountsNumber = 40;
 float fEncAngle=0;
+float fEncAngleOffset=0;
 float fDegPerCount = 9; //counts per rotation = 40 -> 360 degrees / 40 counts = 9 deg/count
+float fAngleTemp = 0;
+
 
 /* USER CODE END PV */
 
@@ -321,8 +324,20 @@ void fnInit(){
 //COUNTS TO ANGLE FUNCTION
 float fnCounts2Angle(iCounts)
 {
-	return iCounts*fDegPerCount;
+	fAngleTemp = iCounts*fDegPerCount - fEncAngleOffset;
+
+	if(fAngleTemp > 180)
+	{
+		fAngleTemp = 360 - fAngleTemp;
+	}
+	else if(fAngleTemp < 0)
+	{
+		fAngleTemp = 0 - fAngleTemp;
+	}
+
+	return fAngleTemp;
 }
+
 
 /* USER CODE END PFP */
 
@@ -365,7 +380,17 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
 		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
 			Error_Handler();
+
 		}
+
+//// ENCODER CALIBRATION - BASE
+//		if(fEncAngleOffset == 0)
+//		{
+//			fEncAngleOffset = fEncAngle;
+//			fEncAngle = fnCounts2Angle(iEncCount);
+//
+//		}
+
 	}
 }
 
