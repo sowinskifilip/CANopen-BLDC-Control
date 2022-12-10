@@ -71,12 +71,12 @@ uint8_t iMachineStatus = 100;
 uint8_t iHomingStatus = 100;
 
 //ENCODER VARIABLES
+uint8_t iEncCountReal=0;
 uint8_t iEncCount=0;
 const uint8_t iEncCountsNumber = 40;
 float fEncAngle=0;
-float fEncAngleOffset=0;
-float fDegPerCount = 9; //counts per rotation = 40 -> 360 degrees / 40 counts = 9 deg/count
-float fAngleTemp = 0;
+float fEncDegPerCount = 9; //counts per rotation = 40 -> 360 degrees / 40 counts = 9 deg/count
+float fEncAngleTemp = 0;
 
 
 /* USER CODE END PV */
@@ -321,23 +321,36 @@ void fnInit(){
 	}
 }
 
-//COUNTS TO ANGLE FUNCTION
-float fnCounts2Angle(iCounts)
+//CALCULATING ENCODER'S COUNTS TO ANGLE
+float fnEncCounts2Angle(iCounts)
 {
-	fAngleTemp = iCounts*fDegPerCount - fEncAngleOffset;
+	fEncAngleTemp = iCounts*fEncDegPerCount;
 
-	if(fAngleTemp > 180)
-	{
-		fAngleTemp = 360 - fAngleTemp;
-	}
-	else if(fAngleTemp < 0)
-	{
-		fAngleTemp = 0 - fAngleTemp;
-	}
-
-	return fAngleTemp;
+	return fEncAngleTemp;
 }
 
+//ENCODER CALIBRATION - BASE
+void fnEncCalibration()
+{
+	TIM3->CNT = 0;
+	fnEncReadCount();
+}
+
+//READING DATA FROM ENCODER
+void fnEncReadCount()
+{
+	iEncCountReal = __HAL_TIM_GET_COUNTER(&htim3);
+	if(iEncCountReal > iEncCountsNumber / 2)
+	{
+		iEncCount = iEncCountsNumber - iEncCountReal;
+	}
+	else
+	{
+		iEncCount = iEncCountReal;
+	}
+
+	fEncAngle = fnEncCounts2Angle(iEncCount);
+}
 
 /* USER CODE END PFP */
 
@@ -358,10 +371,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 
 }
 
+// ENCODER TIMER'S INTERRUPT
 void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim){
 	if(htim -> Instance == TIM3){
-			iEncCount = __HAL_TIM_GET_COUNTER(&htim3);
-			fEncAngle = fnCounts2Angle(iEncCount);
+		fnEncReadCount();
 		}
 }
 
@@ -384,12 +397,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 		}
 
 //// ENCODER CALIBRATION - BASE
-//		if(fEncAngleOffset == 0)
-//		{
-//			fEncAngleOffset = fEncAngle;
-//			fEncAngle = fnCounts2Angle(iEncCount);
-//
-//		}
+//		fnEncCalibration();
 
 	}
 }
