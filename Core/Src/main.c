@@ -330,16 +330,10 @@ void fnInit(){
 	}
 }
 
-//CALCULATING ENCODER'S COUNTS TO ANGLE
-float fnEncCounts2Angle(uint16_t iCounts)
-{
-	fEncAngleTemp = iCounts*fEncDegPerCount;
 
-	return fEncAngleTemp;
-}
 
 //READING DATA FROM ENCODER
-void fnEncReadCount()
+void fnEncReadAngle()
 {
 	iEncCountReal = __HAL_TIM_GET_COUNTER(&htim3);
 	if(iEncCountReal > iEncCountsNumber / 2)
@@ -351,14 +345,14 @@ void fnEncReadCount()
 		iEncCount = iEncCountReal;
 	}
 
-	fEncAngle = fnEncCounts2Angle(iEncCount);
+	fEncAngle = iEncCount*fEncDegPerCount;
 }
 
 //ENCODER CALIBRATION - BASE
 void fnEncCalibration()
 {
 	TIM3->CNT = 0;
-	fnEncReadCount();
+	fnEncReadAngle();
 }
 
 //FRAME SET POSITION SEND
@@ -404,7 +398,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 		else {
 			// ENCODER TIMER START
 			HAL_TIM_Encoder_Start(&htim3,TIM_CHANNEL_ALL);
-			fnEncReadCount();
+			fnEncReadAngle();
 
 			HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);
 			//HAL_TIM_Base_Stop_IT(&htim6);
