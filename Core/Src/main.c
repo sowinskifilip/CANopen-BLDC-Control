@@ -58,6 +58,7 @@ const uint8_t sErrorMessage[] = "UART ERROR\r\n";
 char chTab[4];
 char phrase[10];
 uint8_t length = 0;
+const uint8_t sSerialStart[] = "STSE";
 
 //MODE SELECTION
 const uint8_t sSingle_mode[] = "SNGL";
@@ -437,20 +438,20 @@ void fnMoveAbsolute(uint32_t iNumber){
 
 	if(iMoveEnabled == 1){
 		TxHeader.StdId = 0x60A;
-			TxHeader.DLC = 8;
-			TxData[0] = 0x22;
-			TxData[1] = 0x7A;
-			TxData[2] = 0x60;
-			TxData[3] = 0x00;
-			TxData[4] = (uint8_t) iNumber;
-			TxData[5] = (uint8_t)(iNumber >> 8);
-			TxData[6] = (uint8_t)(iNumber >> 16);
-			TxData[7] = (uint8_t)(iNumber >> 24);
+		TxHeader.DLC = 8;
+		TxData[0] = 0x22;
+		TxData[1] = 0x7A;
+		TxData[2] = 0x60;
+		TxData[3] = 0x00;
+		TxData[4] = (uint8_t) iNumber;
+		TxData[5] = (uint8_t)(iNumber >> 8);
+		TxData[6] = (uint8_t)(iNumber >> 16);
+		TxData[7] = (uint8_t)(iNumber >> 24);
 
-			if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
-				fnLEDsErrorState();
-				Error_Handler();
-			}
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			fnLEDsErrorState();
+			Error_Handler();
+		}
 
 	}
 }
@@ -607,7 +608,7 @@ void fnSerialMotionAction(){
 
 	case 40://REPETITION COUNTER CHECK
 		if (iSerialCounter / 2 == iSerialReps) {
-			iSerialCounter = 0;
+			//iSerialCounter = 0;
 			iSerialMachineStatus = 100;
 			iSerialRange = 0;
 			iSerialReps = 0;
@@ -871,6 +872,19 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 			}
 		}
 
+		//START SERIAL [STSE]
+		else if(strncmp(sUserMessage, sSerialStart, 4) == 0){
+
+			if(iMode == 1 && iSelected_leg != 0 && iSerialReps != 0 && iSerialRange != 0){
+				iSerialCounter = 0;
+				iSerialMachineStatus = 10;
+				HAL_TIM_Base_Start_IT(&htim10);
+				HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
+			}
+
+		}
+
+
 		//SERIAL - REPETITIONS [N]
 		else if(sUserMessage[3] == 'N'){
 			if(iMode == 1){
@@ -882,8 +896,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 		else if(sUserMessage[3] == 'R'){
 			if(iMode == 1){
 				iSerialRange = (uint32_t)(atoi(sUserMessage));
+				iPosition = iSerialRange;
 			}
 		}
+
+
 
 
 
