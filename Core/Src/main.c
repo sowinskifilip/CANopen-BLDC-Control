@@ -55,8 +55,6 @@
 const uint8_t sInitCommand[] = "INIT";
 uint8_t sUserMessage[4];
 const uint8_t sErrorMessage[] = "UART ERROR\r\n";
-const uint8_t sMoveCommand[] = "MOVE";
-const uint8_t sStopCommand[] = "STOP";
 char chTab[4];
 char phrase[10];
 uint8_t length = 0;
@@ -413,6 +411,9 @@ void fnEncCalibration()
 
 //FRAME SET POSITION SEND
 void fnMoveAbsolute(uint32_t iNumber){
+
+	//VAR CHECKING IF LEG IS SELECTED
+	uint8_t iMoveEnabled = 100;
 	if (iNumber > 90) {
 		iNumber = 90;
 	}
@@ -420,24 +421,38 @@ void fnMoveAbsolute(uint32_t iNumber){
 		iNumber = 0;
 	}
 
-	iNumber = iNumber * 1000;
-
-	TxHeader.StdId = 0x60A;
-	TxHeader.DLC = 8;
-	TxData[0] = 0x22;
-	TxData[1] = 0x7A;
-	TxData[2] = 0x60;
-	TxData[3] = 0x00;
-	TxData[4] = (uint8_t) iNumber;
-	TxData[5] = (uint8_t)(iNumber >> 8);
-	TxData[6] = (uint8_t)(iNumber >> 16);
-	TxData[7] = (uint8_t)(iNumber >> 24);
-
-	if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
-		fnLEDsErrorState();
-		Error_Handler();
+	//ESTABLISHING MOTION DIRECTORY BASED ON SEL LEG
+	if(iSelected_leg == 0){
+		iNumber = iNumber * 1000;
+		iMoveEnabled = 1;
 	}
 
+	else if(iSelected_leg == 1){
+		iNumber = -iNumber * 1000;
+		iMoveEnabled = 1;
+	}
+
+	else
+		iMoveEnabled = 0;
+
+	if(iMoveEnabled == 1){
+		TxHeader.StdId = 0x60A;
+			TxHeader.DLC = 8;
+			TxData[0] = 0x22;
+			TxData[1] = 0x7A;
+			TxData[2] = 0x60;
+			TxData[3] = 0x00;
+			TxData[4] = (uint8_t) iNumber;
+			TxData[5] = (uint8_t)(iNumber >> 8);
+			TxData[6] = (uint8_t)(iNumber >> 16);
+			TxData[7] = (uint8_t)(iNumber >> 24);
+
+			if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+				fnLEDsErrorState();
+				Error_Handler();
+			}
+
+	}
 }
 
 void fnSingleMotionAction(){
@@ -820,7 +835,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 			iHomingStatus = 0;
 			HAL_TIM_Base_Start_IT(&htim6);
 		}
-		//MODE SELECTION
+
+		//MODE SELECTION [SNGL/SERL]
 		else if(strncmp(sUserMessage, sSingle_mode, 4) == 0){
 			iMode = 0;
 			HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
@@ -831,7 +847,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 			HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 		}
 
-		//LEG SELECTION
+		//LEG SELECTION [RGHT/LEFT]
 		else if(strncmp(sUserMessage, sLeft, 4) == 0){
 			iSelected_leg = 0;
 			HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
@@ -841,40 +857,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 			iSelected_leg = 1;
 			HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
 		}
-		else if (strncmp(sUserMessage, sMoveCommand,4) == 0) {
-			TxHeader.StdId = 0x60A;
-			TxHeader.DLC = 8;
-			TxData[0] = 0x22;
-			TxData[1] = 0x40;
-			TxData[2] = 0x60;
-			TxData[3] = 0x00;
-			TxData[4] = 0x1F;
-			TxData[5] = 0x00;
-			TxData[6] = 0x00;
-			TxData[7] = 0x00;
 
-			if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
-				fnLEDsErrorState();
-				Error_Handler();
-			}
-		}
-		else if (strncmp(sUserMessage, sStopCommand,4) == 0) {
-			TxHeader.StdId = 0x60A;
-			TxHeader.DLC = 8;
-			TxData[0] = 0x22;
-			TxData[1] = 0x40;
-			TxData[2] = 0x60;
-			TxData[3] = 0x00;
-			TxData[4] = 0x0F;
-			TxData[5] = 0x00;
-			TxData[6] = 0x00;
-			TxData[7] = 0x00;
-
-			if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
-				fnLEDsErrorState();
-				Error_Handler();
-			}
-		}
+		//SINGLE POSITION [P]
 		else if(sUserMessage[3] == 'P'){
 
 			if(iMode == 0){
@@ -886,6 +870,23 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 
 			}
 		}
+
+		//SERIAL - REPETITIONS [N]
+		else if(sUserMessage[3] == 'N'){
+			if(iMode == 1){
+				iSerialReps = (uint32_t)(atoi(sUserMessage));
+			}
+		}
+
+		//SERIAL - RANGE [R]
+		else if(sUserMessage[3] == 'R'){
+			if(iMode == 1){
+				iSerialRange = (uint32_t)(atoi(sUserMessage));
+			}
+		}
+
+
+
 	}
 	else{
 		HAL_UART_Transmit(&huart3, sErrorMessage, strlen(sErrorMessage), 100);
