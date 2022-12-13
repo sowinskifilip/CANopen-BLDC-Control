@@ -606,8 +606,20 @@ void fnSerialMotionAction(){
 		break;
 
 	case 40://REPETITION COUNTER CHECK
-		if (iSerialCounter) {
-
+		if (iSerialCounter / 2 == iSerialReps) {
+			iSerialCounter = 0;
+			iSerialMachineStatus = 100;
+			iSerialRange = 0;
+			iSerialReps = 0;
+			HAL_TIM_Base_Stop(&htim10);
+		}
+		else if (iSerialCounter % 2 == 0) {
+			iPosition = iSerialRange;
+			iSerialMachineStatus = 10;
+		}
+		else {
+			iPosition = 0;
+			iSerialMachineStatus = 10;
 		}
 		break;
 	}
@@ -636,6 +648,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	}
 	else if(htim -> Instance == TIM7){
 		fnSingleMotionAction();
+	}
+	else if(htim -> Instance == TIM10){
+		fnSerialMotionAction();
 	}
 
 }
@@ -700,6 +715,7 @@ int main(void)
 	MX_TIM6_Init();
 	MX_TIM3_Init();
 	MX_TIM7_Init();
+	MX_TIM10_Init();
 	/* USER CODE BEGIN 2 */
 
 	// UART START

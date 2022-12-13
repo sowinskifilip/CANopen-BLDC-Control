@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ../Core/Src/tim.c:32:6:MX_TIM3_Init	56	static
 ../Core/Src/tim.c:76:6:MX_TIM6_Init	24	static
 ../Core/Src/tim.c:109:6:MX_TIM7_Init	24	static
@@ -5,3 +6,13 @@
 ../Core/Src/tim.c:183:6:HAL_TIM_Base_MspInit	24	static
 ../Core/Src/tim.c:218:6:HAL_TIM_Encoder_MspDeInit	16	static
 ../Core/Src/tim.c:245:6:HAL_TIM_Base_MspDeInit	16	static
+=======
+tim.c:33:6:MX_TIM3_Init	56	static
+tim.c:77:6:MX_TIM6_Init	24	static
+tim.c:110:6:MX_TIM7_Init	24	static
+tim.c:143:6:MX_TIM10_Init	8	static
+tim.c:169:6:HAL_TIM_Encoder_MspInit	48	static
+tim.c:210:6:HAL_TIM_Base_MspInit	32	static
+tim.c:260:6:HAL_TIM_Encoder_MspDeInit	16	static
+tim.c:287:6:HAL_TIM_Base_MspDeInit	16	static
+>>>>>>> main
