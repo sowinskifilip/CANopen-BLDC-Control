@@ -282,8 +282,30 @@ void fnInit(){
 			Error_Handler();
 		}
 		else{
-			iMachineStatus = 60;
+			iMachineStatus = 55;
 			HAL_UART_Transmit(&huart3, "C050", 4, 100);
+		}
+		break;
+
+	case 55://SET POINT ACK CHECK
+		TxHeader.StdId = 0x60A;
+		TxHeader.DLC = 8;
+		TxData[0] = 0x40;
+		TxData[1] = 0x41;
+		TxData[2] = 0x60;
+		TxData[3] = 0x00;
+		TxData[4] = 0x00;
+		TxData[5] = 0x00;
+		TxData[6] = 0x00;
+		TxData[7] = 0x00;
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			fnLEDsErrorState();
+			Error_Handler();
+		}
+		else if (RxData[5] & 0b10000) {
+			iMachineStatus = 60;
+			HAL_UART_Transmit(&huart3, "C055", 4, 100);
 		}
 		break;
 
@@ -309,7 +331,7 @@ void fnInit(){
 		}
 		break;
 
-	case 70://SEND STATUS CHECK
+	case 70://TARGET REACHED CHECK
 		TxHeader.StdId = 0x60A;
 		TxHeader.DLC = 8;
 		TxData[0] = 0x40;
@@ -325,7 +347,7 @@ void fnInit(){
 			fnLEDsErrorState();
 			Error_Handler();
 		}
-		else{
+		else if (RxData[5] & 0b00100) {
 			iMachineStatus = 80;
 			HAL_UART_Transmit(&huart3, "C070", 4, 100);
 		}
