@@ -92,6 +92,7 @@ CAN_FilterTypeDef CANFilter;
 uint8_t iMachineStatus = 100;
 uint8_t iHomingStatus = 100;
 uint8_t iSingleMachineStatus = 100;
+uint8_t iSerialMachineStatus = 100;
 
 //ENCODER VARIABLES
 uint16_t iEncCountReal=0;
@@ -103,6 +104,11 @@ float fEncAngleTemp = 0;
 
 //MOVE ABSOLUTE VARIABLES
 uint32_t iPosition;
+
+//SERIAL MODE VARIABLES
+uint8_t iSerialCounter = 100;
+uint8_t iSerialRange = 100;
+uint8_t iSerialReps = 100;
 
 /* USER CODE END PV */
 
@@ -489,6 +495,110 @@ void fnSingleMotionAction(){
 	}
 }
 
+void fnSerialMotionAction(){
+	switch (iSerialMachineStatus){
+	case 10:
+		//START SUPPLY
+		TxHeader.StdId = 0x60A;
+		TxHeader.DLC = 8;
+		TxData[0] = 0x22;
+		TxData[1] = 0x40;
+		TxData[2] = 0x60;
+		TxData[3] = 0x00;
+		TxData[4] = 0x1F;
+		TxData[5] = 0x00;
+		TxData[6] = 0x00;
+		TxData[7] = 0x00;
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			fnLEDsErrorState();
+			Error_Handler();
+		}
+		else{
+			iSerialMachineStatus = 20;
+		}
+		break;
+
+	case 20:
+		//MOVE
+		fnMoveAbsolute(iPosition);
+		iSerialMachineStatus = 25;
+		break;
+
+	case 25://SET POINT ACK CHECK
+		TxHeader.StdId = 0x60A;
+		TxHeader.DLC = 8;
+		TxData[0] = 0x40;
+		TxData[1] = 0x41;
+		TxData[2] = 0x60;
+		TxData[3] = 0x00;
+		TxData[4] = 0x00;
+		TxData[5] = 0x00;
+		TxData[6] = 0x00;
+		TxData[7] = 0x00;
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			fnLEDsErrorState();
+			Error_Handler();
+		}
+		else if (RxData[5] & 0b10000) {
+			iSerialMachineStatus = 30;
+		}
+		break;
+
+	case 30:
+		//STOP SUPPLY
+		TxHeader.StdId = 0x60A;
+		TxHeader.DLC = 8;
+		TxData[0] = 0x22;
+		TxData[1] = 0x40;
+		TxData[2] = 0x60;
+		TxData[3] = 0x00;
+		TxData[4] = 0x0F;
+		TxData[5] = 0x00;
+		TxData[6] = 0x00;
+		TxData[7] = 0x00;
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			fnLEDsErrorState();
+			Error_Handler();
+		}
+		else{
+			iSerialMachineStatus = 35;
+		}
+		break;
+
+	case 35://TARGET REACHED CHECK
+		TxHeader.StdId = 0x60A;
+		TxHeader.DLC = 8;
+		TxData[0] = 0x40;
+		TxData[1] = 0x41;
+		TxData[2] = 0x60;
+		TxData[3] = 0x00;
+		TxData[4] = 0x00;
+		TxData[5] = 0x00;
+		TxData[6] = 0x00;
+		TxData[7] = 0x00;
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			fnLEDsErrorState();
+			Error_Handler();
+		}
+		else if (RxData[5] & 0b00100) {
+			iSerialCounter++;
+			iSerialMachineStatus = 40;
+		}
+		break;
+
+	case 40://REPETITION COUNTER CHECK
+		if (iSerialCounter) {
+
+		}
+		break;
+	}
+}
+
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -688,6 +798,7 @@ void SystemClock_Config(void)
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 	if(huart->Instance == USART3){
 
+		//INIT COMMAND
 		if(strncmp(sUserMessage, sInitCommand,4) == 0){
 			iMachineStatus = 0;
 			iHomingStatus = 0;

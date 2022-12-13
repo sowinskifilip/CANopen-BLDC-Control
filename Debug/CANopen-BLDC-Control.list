@@ -27,23 +27,23 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 0000002e  00000000  00000000  0002007c  2**0
                   CONTENTS, READONLY
- 12 .debug_info   0001a18c  00000000  00000000  000200aa  2**0
+ 12 .debug_info   0001a1e7  00000000  00000000  000200aa  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 000032c7  00000000  00000000  0003a236  2**0
+ 13 .debug_abbrev 000032c7  00000000  00000000  0003a291  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_aranges 00001378  00000000  00000000  0003d500  2**3
+ 14 .debug_aranges 00001380  00000000  00000000  0003d558  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_ranges 00001220  00000000  00000000  0003e878  2**3
+ 15 .debug_ranges 00001228  00000000  00000000  0003e8d8  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_macro  00029cba  00000000  00000000  0003fa98  2**0
+ 16 .debug_macro  00029cba  00000000  00000000  0003fb00  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   00018fd8  00000000  00000000  00069752  2**0
+ 17 .debug_line   000190a1  00000000  00000000  000697ba  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    00100e32  00000000  00000000  0008272a  2**0
+ 18 .debug_str    00100e84  00000000  00000000  0008285b  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000053  00000000  00000000  0018355c  2**0
+ 19 .comment      00000053  00000000  00000000  001836df  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00005234  00000000  00000000  001835b0  2**2
+ 20 .debug_frame  00005250  00000000  00000000  00183734  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -2682,6 +2682,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
  8001446:	4293      	cmp	r3, r2
  8001448:	f040 80d3 	bne.w	80015f2 <HAL_UART_RxCpltCallback+0x1ba>
 
+		//INIT COMMAND
 		if(strncmp(sUserMessage, sInitCommand,4) == 0){
  800144c:	2204      	movs	r2, #4
  800144e:	4971      	ldr	r1, [pc, #452]	; (8001614 <HAL_UART_RxCpltCallback+0x1dc>)
