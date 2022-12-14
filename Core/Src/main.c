@@ -59,7 +59,8 @@ char chTab[4];
 char phrase[10];
 uint8_t length = 0;
 const uint8_t sSerialStart[] = "STSE";
-const uint8_t sGeneralStop[] = "STOP";
+const uint8_t sGeneralStop[] = "HALT";
+const uint8_t sReset[] = "RSET";
 
 //MODE SELECTION
 const uint8_t sSingle_mode[] = "SNGL";
@@ -876,7 +877,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 		//START SERIAL [STSE]
 		else if(strncmp(sUserMessage, sSerialStart, 4) == 0){
 
-			if(iMode == 1 && iSelected_leg != 0 && iSerialReps != 0 && iSerialRange != 0){
+			if(iMode == 1 && iSelected_leg != 100 && iSerialReps != 0 && iSerialRange != 0){
 				iSerialCounter = 0;
 				iSerialMachineStatus = 10;
 				HAL_TIM_Base_Start_IT(&htim10);
@@ -901,11 +902,51 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 			}
 		}
 
-		//GENERAL STOP COMMAND [STOP]
+		//GENERAL STOP COMMAND [HALT]
 		else if(strncmp(sUserMessage, sGeneralStop, 4) == 0){
-			HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
 
+			HAL_UART_Transmit(&huart3, "STOP", 4, 100);
+			TxHeader.StdId = 0x60A;
+			TxHeader.DLC = 8;
+			TxData[0] = 0x22;
+			TxData[1] = 0x40;
+			TxData[2] = 0x60;
+			TxData[3] = 0x00;
+			TxData[4] = 0x02;
+			TxData[5] = 0x00;
+			TxData[6] = 0x00;
+			TxData[7] = 0x00;
 
+			if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+				fnLEDsErrorState();
+				Error_Handler();
+			}
+			else{
+				HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_SET);
+			}
+		}
+
+		//RESET COMMAND [RSET]
+		else if(strncmp(sUserMessage, sReset, 4) == 0){
+
+			TxHeader.StdId = 0x60A;
+			TxHeader.DLC = 8;
+			TxData[0] = 0x22;
+			TxData[1] = 0x40;
+			TxData[2] = 0x60;
+			TxData[3] = 0x00;
+			TxData[4] = 0x0F;
+			TxData[5] = 0x00;
+			TxData[6] = 0x00;
+			TxData[7] = 0x00;
+
+			if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+				fnLEDsErrorState();
+				Error_Handler();
+			}
+			else{
+				HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_RESET);
+			}
 		}
 
 
