@@ -59,6 +59,7 @@ char chTab[4];
 char phrase[10];
 uint8_t length = 0;
 const uint8_t sSerialStart[] = "STSE";
+const uint8_t sGeneralStop[] = "STOP";
 
 //MODE SELECTION
 const uint8_t sSingle_mode[] = "SNGL";
@@ -899,6 +900,16 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 				iPosition = iSerialRange;
 			}
 		}
+
+		//GENERAL STOP COMMAND [STOP]
+		else if(strncmp(sUserMessage, sGeneralStop, 4) == 0){
+			HAL_GPIO_TogglePin(LD1_GPIO_Port, LD1_Pin);
+
+
+		}
+
+
+
 
 
 
