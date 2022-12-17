@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ../Core/Src/main.c:122:6:fnLEDsErrorState	8	static
 ../Core/Src/main.c:130:6:fnInit	8	static
 ../Core/Src/main.c:387:7:fnEncCounts2Angle	16	static
@@ -13,3 +14,21 @@
 ../Core/Src/main.c:841:6:HAL_UART_RxCpltCallback	16	static
 ../Core/Src/main.c:1110:6:HAL_CAN_RxFifo0MsgPendingCallback	16	static
 ../Core/Src/main.c:1123:6:Error_Handler	4	static,ignoring_inline_asm
+=======
+main.c:120:6:fnLEDsErrorState	8	static
+main.c:128:6:fnInit	8	static
+main.c:382:6:fnReset	8	static
+main.c:486:7:fnEncCounts2Angle	16	static
+main.c:494:6:fnEncReadCount	8	static
+main.c:510:6:fnEncCalibration	8	static
+main.c:517:6:fnMoveAbsolute	24	static
+main.c:562:6:fnSingleMotionAction	8	static
+main.c:617:6:fnSerialMotionAction	8	static
+main.c:738:6:HAL_TIM_PeriodElapsedCallback	16	static
+main.c:765:6:HAL_GPIO_EXTI_Callback	16	static
+main.c:795:5:main	8	static
+main.c:878:6:SystemClock_Config	232	static
+main.c:937:6:HAL_UART_RxCpltCallback	16	static
+main.c:1198:6:HAL_CAN_RxFifo0MsgPendingCallback	16	static
+main.c:1211:6:Error_Handler	4	static,ignoring_inline_asm
+>>>>>>> main

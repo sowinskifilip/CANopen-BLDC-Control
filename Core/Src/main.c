@@ -55,10 +55,15 @@
 const uint8_t sInitCommand[] = "INIT";
 uint8_t sUserMessage[4];
 const uint8_t sErrorMessage[] = "UART ERROR\r\n";
+<<<<<<< HEAD
 char chTab[4];
 char phrase[10];
 int length;
 uint8_t data_msg[16];
+=======
+
+uint8_t length = 0;
+>>>>>>> main
 const uint8_t sSerialStart[] = "STSE";
 const uint8_t sGeneralStop[] = "HALT";
 const uint8_t sReset[] = "RSET";
@@ -382,6 +387,108 @@ void fnInit(){
 	}
 }
 
+void fnReset(){
+	switch(iMachineStatus){
+
+	case 10: //SHUTDOWN
+		TxHeader.StdId = 0x60A;
+		TxHeader.DLC = 8;
+		TxData[0] = 0x22;
+		TxData[1] = 0x40;
+		TxData[2] = 0x60;
+		TxData[3] = 0x00;
+		TxData[4] = 0x06;
+		TxData[5] = 0x00;
+		TxData[6] = 0x00;
+		TxData[7] = 0x00;
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			fnLEDsErrorState();
+			Error_Handler();
+		}
+		else{
+			iMachineStatus = 20;
+		}
+		break;
+
+	case 20://SWITCH ON
+		TxHeader.StdId = 0x60A;
+		TxHeader.DLC = 8;
+		TxData[0] = 0x22;
+		TxData[1] = 0x40;
+		TxData[2] = 0x60;
+		TxData[3] = 0x00;
+		TxData[4] = 0x07;
+		TxData[5] = 0x00;
+		TxData[6] = 0x00;
+		TxData[7] = 0x00;
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			fnLEDsErrorState();
+			Error_Handler();
+		}
+		else{
+			iMachineStatus = 25;
+		}
+		break;
+
+	case 25://ENABLE OPERATION
+		TxHeader.StdId = 0x60A;
+		TxHeader.DLC = 8;
+		TxData[0] = 0x22;
+		TxData[1] = 0x40;
+		TxData[2] = 0x60;
+		TxData[3] = 0x00;
+		TxData[4] = 0x0F;
+		TxData[5] = 0x00;
+		TxData[6] = 0x00;
+		TxData[7] = 0x00;
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			fnLEDsErrorState();
+			Error_Handler();
+		}
+		else{
+			iMachineStatus = 70;
+		}
+		break;
+
+	case 70://MOTOR STATUS CHECK
+		TxHeader.StdId = 0x60A;
+		TxHeader.DLC = 8;
+		TxData[0] = 0x40;
+		TxData[1] = 0x41;
+		TxData[2] = 0x60;
+		TxData[3] = 0x00;
+		TxData[4] = 0x00;
+		TxData[5] = 0x00;
+		TxData[6] = 0x00;
+		TxData[7] = 0x00;
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			fnLEDsErrorState();
+			Error_Handler();
+		}
+		else{
+			iMachineStatus = 80;
+		}
+		break;
+
+	case 80://READ STATUS CHECK
+		if (RxData[4] == 39) {
+			iMachineStatus = 1;
+			HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_RESET);
+			HAL_TIM_Base_Stop_IT(&htim14);
+		}
+		else {
+			fnLEDsErrorState();
+			Error_Handler();
+		}
+
+		break;
+	}
+}
+
 
 //CALCULATING ENCODER'S COUNTS TO ANGLE
 float fnEncCounts2Angle(uint16_t iCounts)
@@ -659,10 +766,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	else if(htim -> Instance == TIM10){
 		fnSerialMotionAction();
 	}
+<<<<<<< HEAD
 	else if(htim -> Instance == TIM11){
 		length = sprintf(data_msg, "e%.3f \r\n", fEncAngle);
 		HAL_UART_Transmit(&huart3, data_msg, length, 0xffff);
 	}
+=======
+	else if(htim -> Instance == TIM14){
+			fnReset();
+		}
+>>>>>>> main
 
 }
 
@@ -718,6 +831,7 @@ int main(void)
 
   /* USER CODE END SysInit */
 
+<<<<<<< HEAD
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART3_UART_Init();
@@ -729,6 +843,19 @@ int main(void)
   MX_TIM10_Init();
   MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
+=======
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_USART3_UART_Init();
+	MX_USB_OTG_FS_PCD_Init();
+	MX_CAN1_Init();
+	MX_TIM6_Init();
+	MX_TIM3_Init();
+	MX_TIM7_Init();
+	MX_TIM10_Init();
+	MX_TIM14_Init();
+	/* USER CODE BEGIN 2 */
+>>>>>>> main
 
 	// UART START
 	HAL_UART_Receive_IT(&huart3, sUserMessage, 4);
@@ -918,7 +1045,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 		//GENERAL STOP COMMAND [HALT]
 		else if(strncmp(sUserMessage, sGeneralStop, 4) == 0){
 
-			HAL_UART_Transmit(&huart3, "STOP", 4, 100);
+			//QUICK STOP
 			TxHeader.StdId = 0x60A;
 			TxHeader.DLC = 8;
 			TxData[0] = 0x22;
@@ -935,38 +1062,34 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 				Error_Handler();
 			}
 			else{
-				HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_SET);
+				//DISBALE VOLTAGE
+				TxHeader.StdId = 0x60A;
+				TxHeader.DLC = 8;
+				TxData[0] = 0x22;
+				TxData[1] = 0x40;
+				TxData[2] = 0x60;
+				TxData[3] = 0x00;
+				TxData[4] = 0x00;
+				TxData[5] = 0x00;
+				TxData[6] = 0x00;
+				TxData[7] = 0x00;
+
+				if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+					fnLEDsErrorState();
+					Error_Handler();
+				}
+				else {
+					HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_SET);
+					HAL_UART_Transmit(&huart3, "STOP", 4, 100);
+				}
 			}
 		}
 
 		//RESET COMMAND [RSET]
 		else if(strncmp(sUserMessage, sReset, 4) == 0){
-
-			TxHeader.StdId = 0x60A;
-			TxHeader.DLC = 8;
-			TxData[0] = 0x22;
-			TxData[1] = 0x40;
-			TxData[2] = 0x60;
-			TxData[3] = 0x00;
-			TxData[4] = 0x0F;
-			TxData[5] = 0x00;
-			TxData[6] = 0x00;
-			TxData[7] = 0x00;
-
-			if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
-				fnLEDsErrorState();
-				Error_Handler();
-			}
-			else{
-				HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_RESET);
-			}
+			iMachineStatus=10;
+			HAL_TIM_Base_Start_IT(&htim14);
 		}
-
-
-
-
-
-
 
 
 	}
