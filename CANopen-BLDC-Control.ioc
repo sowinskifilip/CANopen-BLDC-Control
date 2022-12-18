@@ -12,8 +12,9 @@ KeepUserPlacement=false
 Mcu.Family=STM32F7
 Mcu.IP0=CAN1
 Mcu.IP1=CORTEX_M7
-Mcu.IP10=USART3
-Mcu.IP11=USB_OTG_FS
+Mcu.IP10=TIM14
+Mcu.IP11=USART3
+Mcu.IP12=USB_OTG_FS
 Mcu.IP2=NVIC
 Mcu.IP3=RCC
 Mcu.IP4=SYS
@@ -21,12 +22,8 @@ Mcu.IP5=TIM3
 Mcu.IP6=TIM6
 Mcu.IP7=TIM7
 Mcu.IP8=TIM10
-<<<<<<< HEAD
 Mcu.IP9=TIM11
-=======
-Mcu.IP9=TIM14
->>>>>>> main
-Mcu.IPNb=12
+Mcu.IPNb=13
 Mcu.Name=STM32F767ZITx
 Mcu.Package=LQFP144
 Mcu.Pin0=PC13
@@ -60,18 +57,15 @@ Mcu.Pin33=VP_SYS_VS_Systick
 Mcu.Pin34=VP_TIM6_VS_ClockSourceINT
 Mcu.Pin35=VP_TIM7_VS_ClockSourceINT
 Mcu.Pin36=VP_TIM10_VS_ClockSourceINT
-<<<<<<< HEAD
 Mcu.Pin37=VP_TIM11_VS_ClockSourceINT
-=======
-Mcu.Pin37=VP_TIM14_VS_ClockSourceINT
->>>>>>> main
+Mcu.Pin38=VP_TIM14_VS_ClockSourceINT
 Mcu.Pin4=PH1/OSC_OUT
 Mcu.Pin5=PC1
 Mcu.Pin6=PA1
 Mcu.Pin7=PA2
 Mcu.Pin8=PA6
 Mcu.Pin9=PA7
-Mcu.PinsNb=38
+Mcu.PinsNb=39
 Mcu.ThirdPartyNb=0
 Mcu.UserConstants=
 Mcu.UserName=STM32F767ZITx
@@ -87,17 +81,6 @@ NVIC.MemoryManagement_IRQn=true\:0\:0\:false\:false\:true\:true\:false
 NVIC.NonMaskableInt_IRQn=true\:0\:0\:false\:false\:true\:true\:false
 NVIC.PendSV_IRQn=true\:0\:0\:false\:false\:true\:true\:false
 NVIC.PriorityGroup=NVIC_PRIORITYGROUP_4
-<<<<<<< HEAD
-NVIC.SVCall_IRQn=true\:0\:0\:false\:false\:true\:true\:false\:false
-NVIC.SysTick_IRQn=true\:0\:0\:false\:false\:true\:true\:true\:false
-NVIC.TIM1_TRG_COM_TIM11_IRQn=true\:0\:0\:false\:false\:true\:true\:true\:true
-NVIC.TIM1_UP_TIM10_IRQn=true\:0\:0\:false\:false\:true\:true\:true\:true
-NVIC.TIM3_IRQn=true\:0\:0\:false\:false\:true\:true\:true\:true
-NVIC.TIM6_DAC_IRQn=true\:0\:0\:false\:false\:true\:true\:true\:true
-NVIC.TIM7_IRQn=true\:0\:0\:false\:false\:true\:true\:true\:true
-NVIC.USART3_IRQn=true\:0\:0\:false\:false\:true\:true\:true\:true
-NVIC.UsageFault_IRQn=true\:0\:0\:false\:false\:true\:true\:false\:false
-=======
 NVIC.SVCall_IRQn=true\:0\:0\:false\:false\:true\:true\:false
 NVIC.SysTick_IRQn=true\:0\:0\:false\:false\:true\:true\:true
 NVIC.TIM1_UP_TIM10_IRQn=true\:0\:0\:false\:false\:true\:true\:true
@@ -107,7 +90,6 @@ NVIC.TIM7_IRQn=true\:0\:0\:false\:false\:true\:true\:true
 NVIC.TIM8_TRG_COM_TIM14_IRQn=true\:0\:0\:false\:false\:true\:true\:true
 NVIC.USART3_IRQn=true\:0\:0\:false\:false\:true\:true\:true
 NVIC.UsageFault_IRQn=true\:0\:0\:false\:false\:true\:true\:false
->>>>>>> main
 PA1.GPIOParameters=GPIO_Label
 PA1.GPIO_Label=RMII_REF_CLK [LAN8742A-CZ-TR_REFCLK0]
 PA1.Locked=true
@@ -264,7 +246,7 @@ ProjectManager.StackSize=0x400
 ProjectManager.TargetToolchain=STM32CubeIDE
 ProjectManager.ToolChainLocation=
 ProjectManager.UnderRoot=true
-ProjectManager.functionlistsort=1-MX_GPIO_Init-GPIO-false-HAL-true,2-SystemClock_Config-RCC-false-HAL-false,3-MX_USART3_UART_Init-USART3-false-HAL-true,4-MX_USB_OTG_FS_PCD_Init-USB_OTG_FS-false-HAL-true,5-MX_CAN1_Init-CAN1-false-HAL-true,6-MX_TIM6_Init-TIM6-false-HAL-true,7-MX_TIM3_Init-TIM3-false-HAL-true,8-MX_TIM7_Init-TIM7-false-HAL-true,9-MX_TIM10_Init-TIM10-false-HAL-true,0-MX_CORTEX_M7_Init-CORTEX_M7-false-HAL-true
+ProjectManager.functionlistsort=1-MX_GPIO_Init-GPIO-false-HAL-true,2-SystemClock_Config-RCC-false-HAL-false,3-MX_USART3_UART_Init-USART3-false-HAL-true,4-MX_USB_OTG_FS_PCD_Init-USB_OTG_FS-false-HAL-true,5-MX_CAN1_Init-CAN1-false-HAL-true,6-MX_TIM6_Init-TIM6-false-HAL-true,7-MX_TIM3_Init-TIM3-false-HAL-true,8-MX_TIM7_Init-TIM7-false-HAL-true,9-MX_TIM10_Init-TIM10-false-HAL-true,10-MX_TIM14_Init-TIM14-false-HAL-true,0-MX_CORTEX_M7_Init-CORTEX_M7-false-HAL-true
 RCC.48MHZClocksFreq_Value=24000000
 RCC.ADC12outputFreq_Value=72000000
 RCC.ADC34outputFreq_Value=72000000
@@ -360,16 +342,14 @@ SH.S_TIM3_CH2.ConfNb=1
 TIM10.IPParameters=Prescaler,Period
 TIM10.Period=5000-1
 TIM10.Prescaler=9600-1
-<<<<<<< HEAD
-TIM11.IPParameters=Prescaler,Period
-TIM11.Period=10000-1
-TIM11.Prescaler=9600-1
-=======
+TIM11.AutoReloadPreload=TIM_AUTORELOAD_PRELOAD_ENABLE
+TIM11.IPParameters=Prescaler,Period,AutoReloadPreload
+TIM11.Period=9999
+TIM11.Prescaler=9599
 TIM14.AutoReloadPreload=TIM_AUTORELOAD_PRELOAD_ENABLE
 TIM14.IPParameters=Prescaler,Period,AutoReloadPreload
 TIM14.Period=4999
 TIM14.Prescaler=9599
->>>>>>> main
 TIM3.EncoderMode=TIM_ENCODERMODE_TI1
 TIM3.IPParameters=Period,EncoderMode
 TIM3.Period=999
@@ -390,13 +370,10 @@ VP_SYS_VS_Systick.Mode=SysTick
 VP_SYS_VS_Systick.Signal=SYS_VS_Systick
 VP_TIM10_VS_ClockSourceINT.Mode=Enable_Timer
 VP_TIM10_VS_ClockSourceINT.Signal=TIM10_VS_ClockSourceINT
-<<<<<<< HEAD
 VP_TIM11_VS_ClockSourceINT.Mode=Enable_Timer
 VP_TIM11_VS_ClockSourceINT.Signal=TIM11_VS_ClockSourceINT
-=======
 VP_TIM14_VS_ClockSourceINT.Mode=Enable_Timer
 VP_TIM14_VS_ClockSourceINT.Signal=TIM14_VS_ClockSourceINT
->>>>>>> main
 VP_TIM6_VS_ClockSourceINT.Mode=Enable_Timer
 VP_TIM6_VS_ClockSourceINT.Signal=TIM6_VS_ClockSourceINT
 VP_TIM7_VS_ClockSourceINT.Mode=Enable_Timer

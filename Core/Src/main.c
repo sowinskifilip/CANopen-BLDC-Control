@@ -55,15 +55,9 @@
 const uint8_t sInitCommand[] = "INIT";
 uint8_t sUserMessage[4];
 const uint8_t sErrorMessage[] = "UART ERROR\r\n";
-<<<<<<< HEAD
-char chTab[4];
-char phrase[10];
 int length;
 uint8_t data_msg[16];
-=======
 
-uint8_t length = 0;
->>>>>>> main
 const uint8_t sSerialStart[] = "STSE";
 const uint8_t sGeneralStop[] = "HALT";
 const uint8_t sReset[] = "RSET";
@@ -751,7 +745,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 		}
 		else {
 			fnEncReadCount();
-//			HAL_UART_Transmit(&huart3, "BANG", 4, 100);
 
 			//TRANSMIT THE ENCODER VALUE
 			length = sprintf(data_msg, "e%.3f", fEncAngle);
@@ -766,16 +759,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	else if(htim -> Instance == TIM10){
 		fnSerialMotionAction();
 	}
-<<<<<<< HEAD
 	else if(htim -> Instance == TIM11){
 		length = sprintf(data_msg, "e%.3f \r\n", fEncAngle);
 		HAL_UART_Transmit(&huart3, data_msg, length, 0xffff);
 	}
-=======
 	else if(htim -> Instance == TIM14){
 			fnReset();
 		}
->>>>>>> main
+
 
 }
 
@@ -796,10 +787,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 			Error_Handler();
 
 		}
-
-		//// ENCODER CALIBRATION - BASE
-		//		fnEncCalibration();
-
 	}
 }
 
@@ -831,7 +818,6 @@ int main(void)
 
   /* USER CODE END SysInit */
 
-<<<<<<< HEAD
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART3_UART_Init();
@@ -841,9 +827,9 @@ int main(void)
   MX_TIM3_Init();
   MX_TIM7_Init();
   MX_TIM10_Init();
+  MX_TIM14_Init();
   MX_TIM11_Init();
   /* USER CODE BEGIN 2 */
-=======
 	/* Initialize all configured peripherals */
 	MX_GPIO_Init();
 	MX_USART3_UART_Init();
@@ -855,7 +841,6 @@ int main(void)
 	MX_TIM10_Init();
 	MX_TIM14_Init();
 	/* USER CODE BEGIN 2 */
->>>>>>> main
 
 	// UART START
 	HAL_UART_Receive_IT(&huart3, sUserMessage, 4);
@@ -1098,93 +1083,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 	}
 	HAL_UART_Receive_IT(&huart3, sUserMessage, 4);
 	/*
-
-	case 40:// POSITION 120
-		TxHeader.StdId = 0x60A;
-		TxHeader.DLC = 8;
-
-		TxData[0] = 0x22;
-		TxData[1] = 0x7A;
-		TxData[2] = 0x60;
-		TxData[3] = 0x00;
-		TxData[4] = 0xC0;
-		TxData[5] = 0xD4;
-		TxData[6] = 0x01;
-		TxData[7] = 0x00;
-
-		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
-			Error_Handler();
-		}
-		else{
-			iMachineStatus = 50;
-			HAL_UART_Transmit(&huart3, "P120", 4, 100);
-		}
-		break;
-	case 41:// POSITION 90
-		TxHeader.StdId = 0x60A;
-		TxHeader.DLC = 8;
-
-		TxData[0] = 0x22;
-		TxData[1] = 0x7A;
-		TxData[2] = 0x60;
-		TxData[3] = 0x00;
-		TxData[4] = 0x90;
-		TxData[5] = 0x5F;
-		TxData[6] = 0x01;
-		TxData[7] = 0x00;
-
-		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
-			Error_Handler();
-		}
-		else{
-			iMachineStatus = 50;
-			HAL_UART_Transmit(&huart3, "P090", 4, 100);
-		}
-		break;
-
-	case 43:// POSITION 180
-		TxHeader.StdId = 0x60A;
-		TxHeader.DLC = 8;
-
-		TxData[0] = 0x22;
-		TxData[1] = 0x7A;
-		TxData[2] = 0x60;
-		TxData[3] = 0x00;
-		TxData[4] = 0x20;
-		TxData[5] = 0xBF;
-		TxData[6] = 0x02;
-		TxData[7] = 0x00;
-
-		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
-			Error_Handler();
-		}
-		else{
-			iMachineStatus = 50;
-			HAL_UART_Transmit(&huart3, "P180", 4, 100);
-		}
-		break;
-	case 44:// POSITION 45
-		TxHeader.StdId = 0x60A;
-		TxHeader.DLC = 8;
-
-		TxData[0] = 0x22;
-		TxData[1] = 0x7A;
-		TxData[2] = 0x60;
-		TxData[3] = 0x00;
-		TxData[4] = 0xC8;
-		TxData[5] = 0xAF;
-		TxData[6] = 0x00;
-		TxData[7] = 0x00;
-
-		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
-			Error_Handler();
-		}
-		else{
-			iMachineStatus = 50;
-			HAL_UART_Transmit(&huart3, "P045", 4, 100);
-		}
-		break;
-
 
 	case 70://POSTION CHECK
 		TxHeader.StdId = 0x60A;
