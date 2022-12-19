@@ -803,15 +803,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 		else {
 			HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);
 			fnEncReadCount();
-<<<<<<< HEAD
-=======
-
-			//TRANSMIT THE ENCODER VALUE
-			length = sprintf(data_msg, "e%.3f", fEncAngle);
-			//			HAL_UART_Transmit(&huart3, data_msg, length, 0xffff);
-			//			HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);
-
->>>>>>> main
 		}
 	}
 	else if(htim -> Instance == TIM7){
