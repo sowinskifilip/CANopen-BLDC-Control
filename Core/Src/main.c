@@ -58,10 +58,18 @@ const uint8_t sErrorMessage[] = "UART ERROR\r\n";
 int length;
 uint8_t data_msg[16];
 
+//INCOMING DATA
 const uint8_t sSerialStart[] = "STSE";
 const uint8_t sGeneralStop[] = "HALT";
 const uint8_t sReset[] = "RSET";
 const uint8_t sContinue[] = "CONT";
+
+//OUTGOING DATA
+const uint8_t sInitState[] = "inig \r\n";
+const uint8_t sWorkState[] = "work \r\n";
+const uint8_t sReadyState[] = "redy \r\n";
+int iLengthOut = strlen(sInitState);
+
 
 //MODE SELECTION
 const uint8_t sSingle_mode[] = "SNGL";
@@ -128,6 +136,7 @@ void fnLEDsErrorState(){
 
 //INIT FUNCTION
 void fnInit(){
+
 	switch(iMachineStatus){
 
 	case 0: //RESET PDO
@@ -142,7 +151,8 @@ void fnInit(){
 		}
 		else{
 			iMachineStatus = 5;
-			HAL_UART_Transmit(&huart3, "C000", 4, 100);
+			//SEND INFO THAT ENGINE IS INITIALIZING
+			HAL_UART_Transmit(&huart3, sInitState, iLengthOut, 100);
 		}
 		break;
 
@@ -158,7 +168,6 @@ void fnInit(){
 		}
 		else{
 			iMachineStatus = 10;
-			HAL_UART_Transmit(&huart3, "C005", 4, 100);
 		}
 		break;
 
@@ -180,7 +189,6 @@ void fnInit(){
 		}
 		else{
 			iMachineStatus = 20;
-			HAL_UART_Transmit(&huart3, "C010", 4, 100);
 		}
 		break;
 
@@ -202,7 +210,6 @@ void fnInit(){
 		}
 		else{
 			iMachineStatus = 25;
-			HAL_UART_Transmit(&huart3, "C020", 4, 100);
 		}
 		break;
 
@@ -224,7 +231,6 @@ void fnInit(){
 		}
 		else{
 			iMachineStatus = 30;
-			HAL_UART_Transmit(&huart3, "C025", 4, 100);
 		}
 		break;
 
@@ -246,7 +252,6 @@ void fnInit(){
 		}
 		else{
 			iMachineStatus = 40;
-			HAL_UART_Transmit(&huart3, "C030", 4, 100);
 		}
 		break;
 
@@ -269,7 +274,6 @@ void fnInit(){
 		}
 		else{
 			iMachineStatus = 50;
-			HAL_UART_Transmit(&huart3, "P000", 4, 100);
 		}
 		break;
 
@@ -291,7 +295,6 @@ void fnInit(){
 		}
 		else{
 			iMachineStatus = 55;
-			HAL_UART_Transmit(&huart3, "C050", 4, 100);
 		}
 		break;
 
@@ -313,7 +316,6 @@ void fnInit(){
 		}
 		else if (RxData[5] & 0b10000) {
 			iMachineStatus = 60;
-			HAL_UART_Transmit(&huart3, "C055", 4, 100);
 		}
 		break;
 
@@ -335,7 +337,6 @@ void fnInit(){
 		}
 		else{
 			iMachineStatus = 70;
-			HAL_UART_Transmit(&huart3, "C060", 4, 100);
 		}
 		break;
 
@@ -357,7 +358,8 @@ void fnInit(){
 		}
 		else if (RxData[5] & 0b00100) {
 			iMachineStatus = 80;
-			HAL_UART_Transmit(&huart3, "C070", 4, 100);
+			//SEND INFO THAT ENGINE IS READY
+			HAL_UART_Transmit(&huart3, sReadyState, iLengthOut, 100);
 		}
 		break;
 
@@ -370,8 +372,9 @@ void fnInit(){
 			HAL_TIM_Encoder_Start(&htim3,TIM_CHANNEL_ALL);
 			fnEncCalibration();
 
-			//SEND INFO THAT ENGINE IS READY
-			HAL_UART_Transmit(&huart3, "redy", 4, 100);
+			//SEND ENCODER VALUE AFTER INIT
+			length = sprintf(data_msg, "e%.3f \r\n", fEncAngle);
+			HAL_UART_Transmit(&huart3, data_msg, length, 0xffff);
 
 		}
 		else {
@@ -565,7 +568,6 @@ void fnMoveAbsolute(uint32_t iNumber){
 
 void fnSingleMotionAction(){
 	//SEND INFO THAT ENGINE IS WORKING
-	HAL_UART_Transmit(&huart3, "work", 4, 100);
 	switch (iSingleMachineStatus){
 	case 10:
 		//START SUPPLY
@@ -586,6 +588,7 @@ void fnSingleMotionAction(){
 		}
 		else{
 			iSingleMachineStatus = 20;
+			HAL_UART_Transmit(&huart3, sWorkState, iLengthOut, 100);
 		}
 		break;
 
@@ -660,7 +663,7 @@ void fnSingleMotionAction(){
 			iSingleMachineStatus = 100;
 			HAL_TIM_Base_Stop_IT(&htim7);
 			//SEND INFO THAT ENGINE IS READY
-			HAL_UART_Transmit(&huart3, "redy", 4, 100);
+			HAL_UART_Transmit(&huart3, sReadyState, iLengthOut, 100);
 		}
 		break;
 	}
@@ -668,7 +671,7 @@ void fnSingleMotionAction(){
 
 void fnSerialMotionAction(){
 	//SEND INFO THAT ENGINE IS WORKING
-	HAL_UART_Transmit(&huart3, "work", 4, 100);
+	HAL_UART_Transmit(&huart3, sWorkState, iLengthOut, 100);
 
 	switch (iSerialMachineStatus){
 	case 10:
@@ -774,7 +777,7 @@ void fnSerialMotionAction(){
 			iSerialReps = 0;
 			HAL_TIM_Base_Stop(&htim10);
 			//SEND INFO THAT ENGINE IS READY
-			HAL_UART_Transmit(&huart3, "redy", 4, 100);
+			HAL_UART_Transmit(&huart3, sReadyState, iLengthOut, 100);
 		}
 		else if (iSerialCounter % 2 == 0) {
 			iPosition = iSerialRange;
@@ -815,8 +818,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 	}
 	else if(htim -> Instance == TIM11){
 		//SENDING ACTUAL ENCODER VALUE
-		length = sprintf(data_msg, "e%.3f \r\n", fEncAngle);
-		HAL_UART_Transmit(&huart3, data_msg, length, 0xffff);
+		if (iMode == 0 && iSingleMachineStatus != 100) {
+			length = sprintf(data_msg, "e%.3f \r\n", fEncAngle);
+			HAL_UART_Transmit(&huart3, data_msg, length, 0xffff);
+		}
+		else if (iMode == 1 && iSerialMachineStatus != 100) {
+			length = sprintf(data_msg, "e%.3f \r\n", fEncAngle);
+			HAL_UART_Transmit(&huart3, data_msg, length, 0xffff);
+		}
 	}
 	else if(htim -> Instance == TIM14){
 		fnReset();
@@ -848,43 +857,43 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 /* USER CODE END 0 */
 
 /**
- * @brief  The application entry point.
- * @retval int
- */
+  * @brief  The application entry point.
+  * @retval int
+  */
 int main(void)
 {
-	/* USER CODE BEGIN 1 */
+  /* USER CODE BEGIN 1 */
 
-	/* USER CODE END 1 */
+  /* USER CODE END 1 */
 
-	/* MCU Configuration--------------------------------------------------------*/
+  /* MCU Configuration--------------------------------------------------------*/
 
-	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-	HAL_Init();
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
 
-	/* USER CODE BEGIN Init */
+  /* USER CODE BEGIN Init */
 
-	/* USER CODE END Init */
+  /* USER CODE END Init */
 
-	/* Configure the system clock */
-	SystemClock_Config();
+  /* Configure the system clock */
+  SystemClock_Config();
 
-	/* USER CODE BEGIN SysInit */
+  /* USER CODE BEGIN SysInit */
 
-	/* USER CODE END SysInit */
+  /* USER CODE END SysInit */
 
-	/* Initialize all configured peripherals */
-	MX_GPIO_Init();
-	MX_USART3_UART_Init();
-	MX_USB_OTG_FS_PCD_Init();
-	MX_CAN1_Init();
-	MX_TIM6_Init();
-	MX_TIM3_Init();
-	MX_TIM7_Init();
-	MX_TIM10_Init();
-	MX_TIM14_Init();
-	MX_TIM11_Init();
-	/* USER CODE BEGIN 2 */
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_USART3_UART_Init();
+  MX_USB_OTG_FS_PCD_Init();
+  MX_CAN1_Init();
+  MX_TIM6_Init();
+  MX_TIM3_Init();
+  MX_TIM7_Init();
+  MX_TIM10_Init();
+  MX_TIM11_Init();
+  MX_TIM14_Init();
+  /* USER CODE BEGIN 2 */
 	/* Initialize all configured peripherals */
 	MX_GPIO_Init();
 	MX_USART3_UART_Init();
@@ -928,79 +937,79 @@ int main(void)
 	HAL_CAN_ActivateNotification(&hcan1, CAN_IT_RX_FIFO0_MSG_PENDING);
 
 
-	/* USER CODE END 2 */
+  /* USER CODE END 2 */
 
-	/* Infinite loop */
-	/* USER CODE BEGIN WHILE */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
 	while (1)
 	{
 
-		/* USER CODE END WHILE */
+    /* USER CODE END WHILE */
 
-		/* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
 	}
-	/* USER CODE END 3 */
+  /* USER CODE END 3 */
 }
 
 /**
- * @brief System Clock Configuration
- * @retval None
- */
+  * @brief System Clock Configuration
+  * @retval None
+  */
 void SystemClock_Config(void)
 {
-	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-	RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
-	/** Configure LSE Drive Capability
-	 */
-	HAL_PWR_EnableBkUpAccess();
-	/** Configure the main internal regulator output voltage
-	 */
-	__HAL_RCC_PWR_CLK_ENABLE();
-	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
-	/** Initializes the RCC Oscillators according to the specified parameters
-	 * in the RCC_OscInitTypeDef structure.
-	 */
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-	RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
-	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-	RCC_OscInitStruct.PLL.PLLM = 4;
-	RCC_OscInitStruct.PLL.PLLN = 96;
-	RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-	RCC_OscInitStruct.PLL.PLLQ = 4;
-	RCC_OscInitStruct.PLL.PLLR = 2;
-	if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	/** Activate the Over-Drive mode
-	 */
-	if (HAL_PWREx_EnableOverDrive() != HAL_OK)
-	{
-		Error_Handler();
-	}
-	/** Initializes the CPU, AHB and APB buses clocks
-	 */
-	RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-			|RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  /** Configure LSE Drive Capability
+  */
+  HAL_PWR_EnableBkUpAccess();
+  /** Configure the main internal regulator output voltage
+  */
+  __HAL_RCC_PWR_CLK_ENABLE();
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 4;
+  RCC_OscInitStruct.PLL.PLLN = 96;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
+  RCC_OscInitStruct.PLL.PLLR = 2;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Activate the Over-Drive mode
+  */
+  if (HAL_PWREx_EnableOverDrive() != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Initializes the CPU, AHB and APB buses clocks
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-	if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
-	{
-		Error_Handler();
-	}
-	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART3|RCC_PERIPHCLK_CLK48;
-	PeriphClkInitStruct.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
-	PeriphClkInitStruct.Clk48ClockSelection = RCC_CLK48SOURCE_PLL;
-	if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-	{
-		Error_Handler();
-	}
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART3|RCC_PERIPHCLK_CLK48;
+  PeriphClkInitStruct.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
+  PeriphClkInitStruct.Clk48ClockSelection = RCC_CLK48SOURCE_PLL;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /* USER CODE BEGIN 4 */
@@ -1219,34 +1228,34 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan){
 /* USER CODE END 4 */
 
 /**
- * @brief  This function is executed in case of error occurrence.
- * @retval None
- */
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
 void Error_Handler(void)
 {
-	/* USER CODE BEGIN Error_Handler_Debug */
+  /* USER CODE BEGIN Error_Handler_Debug */
 	/* User can add his own implementation to report the HAL error return state */
 	__disable_irq();
 	while (1)
 	{
 	}
-	/* USER CODE END Error_Handler_Debug */
+  /* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-	/* USER CODE BEGIN 6 */
+  /* USER CODE BEGIN 6 */
 	/* User can add his own implementation to report the file name and line number,
  ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-	/* USER CODE END 6 */
+  /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
 
