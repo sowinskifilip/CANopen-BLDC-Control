@@ -68,6 +68,7 @@ const uint8_t sContinue[] = "CONT";
 const uint8_t sInitState[] = "inig \r\n";
 const uint8_t sWorkState[] = "work \r\n";
 const uint8_t sReadyState[] = "redy \r\n";
+const uint8_t sStopState[] = "stop \r\n";
 int iLengthOut = strlen(sInitState);
 
 
@@ -692,8 +693,7 @@ void fnSingleMotionAction(){
 }
 
 void fnSerialMotionAction(){
-	//SEND INFO THAT ENGINE IS WORKING
-	HAL_UART_Transmit(&huart3, sWorkState, iLengthOut, 100);
+
 
 	switch (iSerialMachineStatus){
 	case 10:
@@ -715,6 +715,8 @@ void fnSerialMotionAction(){
 		}
 		else{
 			iSerialMachineStatus = 20;
+			//SEND INFO THAT ENGINE IS WORKING
+			HAL_UART_Transmit(&huart3, sWorkState, iLengthOut, 100);
 		}
 		break;
 
@@ -1146,7 +1148,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 				}
 				else {
 					HAL_GPIO_WritePin(LD3_GPIO_Port, LD3_Pin, GPIO_PIN_SET);
-					HAL_UART_Transmit(&huart3, "STOP", 4, 100);
+					HAL_UART_Transmit(&huart3, sStopState, iLengthOut, 100);
 				}
 			}
 		}
