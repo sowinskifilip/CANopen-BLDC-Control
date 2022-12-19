@@ -369,7 +369,8 @@ void fnInit(){
 			HAL_TIM_Encoder_Start(&htim3,TIM_CHANNEL_ALL);
 			fnEncCalibration();
 
-			HAL_UART_Transmit(&huart3, "C080", 4, 100);
+			//SEND INFO THAT ENGINE IS READY
+			HAL_UART_Transmit(&huart3, "redy", 4, 100);
 
 		}
 		else {
@@ -562,6 +563,8 @@ void fnMoveAbsolute(uint32_t iNumber){
 }
 
 void fnSingleMotionAction(){
+	//SEND INFO THAT ENGINE IS WORKING
+	HAL_UART_Transmit(&huart3, "work", 4, 100);
 	switch (iSingleMachineStatus){
 	case 10:
 		//START SUPPLY
@@ -611,12 +614,17 @@ void fnSingleMotionAction(){
 		else{
 			iSingleMachineStatus = 100;
 			HAL_TIM_Base_Stop_IT(&htim7);
+			//SEND INFO THAT ENGINE IS READY
+			HAL_UART_Transmit(&huart3, "redy", 4, 100);
 		}
 		break;
 	}
 }
 
 void fnSerialMotionAction(){
+	//SEND INFO THAT ENGINE IS WORKING
+	HAL_UART_Transmit(&huart3, "work", 4, 100);
+
 	switch (iSerialMachineStatus){
 	case 10:
 		//START SUPPLY
@@ -718,6 +726,8 @@ void fnSerialMotionAction(){
 			iSerialRange = 0;
 			iSerialReps = 0;
 			HAL_TIM_Base_Stop(&htim10);
+			//SEND INFO THAT ENGINE IS READY
+			HAL_UART_Transmit(&huart3, "redy", 4, 100);
 		}
 		else if (iSerialCounter % 2 == 0) {
 			iPosition = iSerialRange;
@@ -745,12 +755,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 		}
 		else {
 			fnEncReadCount();
-
-			//TRANSMIT THE ENCODER VALUE
-			length = sprintf(data_msg, "e%.3f", fEncAngle);
-//			HAL_UART_Transmit(&huart3, data_msg, length, 0xffff);
-//			HAL_GPIO_WritePin(LD1_GPIO_Port, LD1_Pin, GPIO_PIN_SET);
-
 		}
 	}
 	else if(htim -> Instance == TIM7){
@@ -760,6 +764,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 		fnSerialMotionAction();
 	}
 	else if(htim -> Instance == TIM11){
+		//SENDING ACTUAL ENCODER VALUE
 		length = sprintf(data_msg, "e%.3f \r\n", fEncAngle);
 		HAL_UART_Transmit(&huart3, data_msg, length, 0xffff);
 	}
