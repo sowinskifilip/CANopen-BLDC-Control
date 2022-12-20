@@ -863,7 +863,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 		TxHeader.StdId = 0x60A;
 		TxHeader.DLC = 8;
 		TxData[0] = 0x40;
-		TxData[1] = 0x41;
+		TxData[1] = 0x6C;
 		TxData[2] = 0x60;
 		TxData[3] = 0x00;
 		TxData[4] = 0x00;
