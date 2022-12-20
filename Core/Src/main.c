@@ -115,11 +115,13 @@ float fEncAngleTemp = 0;
 
 //MOVE ABSOLUTE VARIABLES
 uint32_t iPosition;
+uint32_t iVelocity;
 
 //SERIAL MODE VARIABLES
 uint8_t iSerialCounter = 100;
 uint32_t iSerialRange = 100;
 uint8_t iSerialReps = 100;
+
 
 /* USER CODE END PV */
 
@@ -589,6 +591,26 @@ void fnMoveAbsolute(uint32_t iNumber){
 	}
 }
 
+//FRAME SET VELOCITY
+void fnSetVelocity(uint32_t iNumber){
+
+		TxHeader.StdId = 0x60A;
+		TxHeader.DLC = 8;
+		TxData[0] = 0x22;
+		TxData[1] = 0x81;
+		TxData[2] = 0x60;
+		TxData[3] = 0x00;
+		TxData[4] = (uint8_t) iNumber;
+		TxData[5] = (uint8_t)(iNumber >> 8);
+		TxData[6] = (uint8_t)(iNumber >> 16);
+		TxData[7] = (uint8_t)(iNumber >> 24);
+
+		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+			fnLEDsErrorState();
+			Error_Handler();
+		}
+}
+
 void fnSingleMotionAction(){
 	//SEND INFO THAT ENGINE IS WORKING
 	switch (iSingleMachineStatus){
@@ -815,7 +837,6 @@ void fnSerialMotionAction(){
 	}
 }
 
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -860,6 +881,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim){
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 	if(GPIO_Pin == USER_Btn_Pin){
+
+		/*
 		TxHeader.StdId = 0x60A;
 		TxHeader.DLC = 8;
 		TxData[0] = 0x40;
@@ -873,8 +896,16 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 
 		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
 			Error_Handler();
-
 		}
+		else if(RxData[1] == 0x6C){
+			iTempRxData0 = RxData[4];
+			iTempRxData1 = RxData[5];
+			iTempRxData2 = RxData[6];
+			iTempRxData3 = RxData[7];
+		}
+		*/
+
+		fnSetVelocity(iVelocity);
 	}
 }
 
@@ -1169,7 +1200,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 
 			HAL_TIM_Base_Start_IT(&htim14);
 		}
-
 
 	}
 	else{
