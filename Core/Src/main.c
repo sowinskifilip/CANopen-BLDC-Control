@@ -514,15 +514,15 @@ void fnReset(){
 }
 
 
-//CALCULATING ENCODER'S COUNTS TO ANGLE
-float fnEncCounts2Angle(uint16_t iCounts)
-{
-	fEncAngleTemp = iCounts*fEncDegPerCount;
+////CALCULATING ENCODER'S COUNTS TO ANGLE
+//float fnEncCounts2Angle(uint16_t iCounts)
+//{
+//	fEncAngleTemp = iCounts*fEncDegPerCount;
+//
+//	return fEncAngleTemp;
+//}
 
-	return fEncAngleTemp;
-}
-
-//READING DATA FROM ENCODER
+//READING DATA FROM ENCODER & CALCULATING COUNTS TO ANGLE
 void fnEncReadCount()
 {
 	iEncCountReal = __HAL_TIM_GET_COUNTER(&htim3);
@@ -535,7 +535,9 @@ void fnEncReadCount()
 		iEncCount = iEncCountReal;
 	}
 
-	fEncAngle = fnEncCounts2Angle(iEncCount)/2;
+//	fEncAngle = fnEncCounts2Angle(iEncCount)/2;
+
+	fEncAngle = iEncCount*fEncDegPerCount/2;
 }
 
 //ENCODER CALIBRATION - BASE
