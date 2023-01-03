@@ -12,6 +12,7 @@ RM := rm -rf
 -include Drivers/STM32F7xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
+-include subdir.mk
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -60,8 +61,8 @@ all: main-build
 main-build: CANopen-BLDC-Control.elf secondary-outputs
 
 # Tool invocations
-CANopen-BLDC-Control.elf: $(OBJS) $(USER_OBJS) D:\AiR\sem7\inzynierka\STM32\CANopen-BLDC-Control\STM32F767ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "CANopen-BLDC-Control.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"D:\AiR\sem7\inzynierka\STM32\CANopen-BLDC-Control\STM32F767ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="CANopen-BLDC-Control.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
+CANopen-BLDC-Control.elf: $(OBJS) $(USER_OBJS) C:\Users\filip\STM32CubeIDE\workspace_1.7.0\CANopen-BLDC-Control\STM32F767ZITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "CANopen-BLDC-Control.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"C:\Users\filip\STM32CubeIDE\workspace_1.7.0\CANopen-BLDC-Control\STM32F767ZITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="CANopen-BLDC-Control.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -82,7 +83,7 @@ CANopen-BLDC-Control.bin: $(EXECUTABLES) makefile objects.list $(OPTIONAL_TOOL_D
 
 # Other Targets
 clean:
-	-$(RM) CANopen-BLDC-Control.bin CANopen-BLDC-Control.elf CANopen-BLDC-Control.list default.size.stdout
+	-$(RM) $(SIZE_OUTPUT)$(OBJDUMP_LIST)$(EXECUTABLES)$(OBJS)$(S_DEPS)$(S_UPPER_DEPS)$(C_DEPS)$(OBJCOPY_BIN) CANopen-BLDC-Control.elf
 	-@echo ' '
 
 secondary-outputs: $(SIZE_OUTPUT) $(OBJDUMP_LIST) $(OBJCOPY_BIN)
@@ -94,6 +95,6 @@ fail-specified-linker-script-missing:
 warn-no-linker-script-specified:
 	@echo 'Warning: No linker script specified. Check the linker settings in the build configuration.'
 
-.PHONY: all clean dependents main-build fail-specified-linker-script-missing warn-no-linker-script-specified
+.PHONY: all clean dependents fail-specified-linker-script-missing warn-no-linker-script-specified
 
 -include ../makefile.targets

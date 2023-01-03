@@ -80,6 +80,10 @@ const uint8_t sSerial_mode[] = "SERL";
 const uint8_t sRight[] = "RGHT";
 const uint8_t sLeft[] = "LEFT";
 
+//SPEED SELECTION
+const uint8_t sFast[] = "FAST";
+const uint8_t sSlow[] = "SLOW";
+
 //MINMAX VALUES
 const uint32_t iMax_angle = 90;
 const uint32_t iMin_angle = 0;
@@ -535,9 +539,9 @@ void fnEncReadCount()
 		iEncCount = iEncCountReal;
 	}
 
-//	fEncAngle = fnEncCounts2Angle(iEncCount)/2;
+	//	fEncAngle = fnEncCounts2Angle(iEncCount)/2;
 
-	fEncAngle = iEncCount*fEncDegPerCount/2;
+	fEncAngle = 90 - iEncCount*fEncDegPerCount/2;
 }
 
 //ENCODER CALIBRATION - BASE
@@ -549,6 +553,8 @@ void fnEncCalibration()
 
 //FRAME SET POSITION SEND
 void fnMoveAbsolute(uint32_t iNumber){
+
+	iNumber = 90 - iNumber;
 
 	//VAR CHECKING IF LEG IS SELECTED
 	uint8_t iMoveEnabled = 100;
@@ -596,27 +602,33 @@ void fnMoveAbsolute(uint32_t iNumber){
 //FRAME SET VELOCITY
 void fnSetVelocity(uint32_t iNumber){
 
-		TxHeader.StdId = 0x60A;
-		TxHeader.DLC = 8;
-		TxData[0] = 0x22;
-		TxData[1] = 0x81;
-		TxData[2] = 0x60;
-		TxData[3] = 0x00;
-		TxData[4] = (uint8_t) iNumber;
-		TxData[5] = (uint8_t)(iNumber >> 8);
-		TxData[6] = (uint8_t)(iNumber >> 16);
-		TxData[7] = (uint8_t)(iNumber >> 24);
+	TxHeader.StdId = 0x60A;
+	TxHeader.DLC = 8;
+	TxData[0] = 0x22;
+	TxData[1] = 0x81;
+	TxData[2] = 0x60;
+	TxData[3] = 0x00;
+	TxData[4] = (uint8_t) iNumber;
+	TxData[5] = (uint8_t)(iNumber >> 8);
+	TxData[6] = (uint8_t)(iNumber >> 16);
+	TxData[7] = (uint8_t)(iNumber >> 24);
 
-		if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
-			fnLEDsErrorState();
-			Error_Handler();
-		}
+	if(HAL_CAN_AddTxMessage(&hcan1, &TxHeader, TxData, &TxMailbox) != HAL_OK){
+		fnLEDsErrorState();
+		Error_Handler();
+	}
 }
 
 void fnSingleMotionAction(){
 	//SEND INFO THAT ENGINE IS WORKING
 	switch (iSingleMachineStatus){
 	case 10:
+		//SET POSITION
+		fnMoveAbsolute(iPosition);
+		iSingleMachineStatus = 20;
+		break;
+
+	case 20:
 		//START SUPPLY
 		TxHeader.StdId = 0x60A;
 		TxHeader.DLC = 8;
@@ -634,15 +646,9 @@ void fnSingleMotionAction(){
 			Error_Handler();
 		}
 		else{
-			iSingleMachineStatus = 20;
+			iSingleMachineStatus = 25;
 			HAL_UART_Transmit(&huart3, sWorkState, iLengthOut, 100);
 		}
-		break;
-
-	case 20:
-		//MOVE
-		fnMoveAbsolute(iPosition);
-		iSingleMachineStatus = 25;
 		break;
 
 	case 25:
@@ -721,6 +727,12 @@ void fnSerialMotionAction(){
 
 	switch (iSerialMachineStatus){
 	case 10:
+		//SET POSITION
+		fnMoveAbsolute(iPosition);
+		iSerialMachineStatus = 20;
+		break;
+
+	case 20:
 		//START SUPPLY
 		TxHeader.StdId = 0x60A;
 		TxHeader.DLC = 8;
@@ -738,16 +750,10 @@ void fnSerialMotionAction(){
 			Error_Handler();
 		}
 		else{
-			iSerialMachineStatus = 20;
+			iSerialMachineStatus = 25;
 			//SEND INFO THAT ENGINE IS WORKING
 			HAL_UART_Transmit(&huart3, sWorkState, iLengthOut, 100);
 		}
-		break;
-
-	case 20:
-		//MOVE
-		fnMoveAbsolute(iPosition);
-		iSerialMachineStatus = 25;
 		break;
 
 	case 25:
@@ -832,7 +838,7 @@ void fnSerialMotionAction(){
 			iSerialMachineStatus = 10;
 		}
 		else {
-			iPosition = 0;
+			iPosition = 90;
 			iSerialMachineStatus = 10;
 		}
 		break;
@@ -905,7 +911,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin){
 			iTempRxData2 = RxData[6];
 			iTempRxData3 = RxData[7];
 		}
-		*/
+		 */
 
 		fnSetVelocity(iVelocity);
 	}
@@ -1101,6 +1107,17 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart){
 		else if(strncmp(sUserMessage, sRight, 4) == 0){
 			iSelected_leg = 1;
 			HAL_TIM_Base_Start_IT(&htim11);
+		}
+
+		//SPEED SELECTION [FAST/SLOW]
+		else if(strncmp(sUserMessage, sFast, 4) == 0){
+			iVelocity = 0x946F;
+			fnSetVelocity(iVelocity);
+		}
+
+		else if(strncmp(sUserMessage, sSlow, 4) == 0){
+			iVelocity = 0x4A37;
+			fnSetVelocity(iVelocity);
 		}
 
 		//SINGLE POSITION [P]
